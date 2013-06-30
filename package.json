@@ -1,0 +1,40 @@
+{
+    "name": "evo-cords",
+    "description": "Evo Cloud Neural Network Central Cords",
+    "version": "0.0.1",
+    "author": "Yisui Hu <easeway@gmail.com>",
+    "scripts": {
+        "start": "node cords",
+        "test": "mocha --reporter spec test/*-test.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/evo-cloud/cords"
+    },
+    "bin": "./cords.js",
+    "dependencies": {
+        "evo-elements": "git://github.com/evo-cloud/elements",
+        "evo-neuron": "git://github.com/evo-cloud/neuron",
+        "js-class": "0.0.2",
+        "underscore": "1.4.4",
+        "async": "0.2.8",
+        "express": "3.2.4",
+        "websocket": "1.0.8",
+        "request": "2.21.0",
+        "msgpack": "0.1.8"
+    },
+    "devDependencies": {
+        "mocha": "1.10.0",
+        "sandboxed-module": "0.2.0"
+    },
+    "engines": {
+        "node": ">=0.8",
+        "npm": "1"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://github.com/evo-cloud/cords/raw/master/LICENSE"
+        }
+    ]
+}
