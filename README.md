@@ -1,14 +1,13 @@
-# Evo Cloud Neural Network Central Cords
+# Evo Cloud Cluster Network Connector
 
 ## Overview
 
-This is Neuron based service which behaves like central cords in a neural network.
-It helps build up a self-managed network for Evo Cloud.
+This is Neuron based service which connects remote nodes to create a self-managed network.
 
 ## Install
 
 ```bash
-npm install evo-cords
+npm install evo-connector
 ```
 
 ## How to Use
@@ -21,7 +20,7 @@ The following configuration properties are required:
 Example:
 
 ```bash
-node cords.js --name myCloud1 --address 192.168.100.101 --port 680
+node connector.js --name myCloud1 --address 192.168.100.101 --port 680
 ```
 
 ## License

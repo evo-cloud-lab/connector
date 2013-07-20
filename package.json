@@ -1,17 +1,17 @@
 {
-    "name": "evo-cords",
-    "description": "Evo Cloud Neural Network Central Cords",
+    "name": "evo-connector",
+    "description": "Evo Cloud Cluster Network Connector",
     "version": "0.0.1",
     "author": "Yisui Hu <easeway@gmail.com>",
     "scripts": {
-        "start": "node cords",
+        "start": "node connector",
         "test": "mocha --reporter spec test/*-test.js"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/evo-cloud/cords"
+        "url": "https://github.com/evo-cloud/connector"
     },
-    "bin": "./cords.js",
+    "bin": "./connector.js",
     "dependencies": {
         "evo-elements": "git://github.com/evo-cloud/elements",
         "evo-neuron": "git://github.com/evo-cloud/neuron",
@@ -34,7 +34,7 @@
     "licenses": [
         {
             "type": "MIT",
-            "url": "https://github.com/evo-cloud/cords/raw/master/LICENSE"
+            "url": "https://github.com/evo-cloud/connector/raw/master/LICENSE"
         }
     ]
 }
