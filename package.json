@@ -17,11 +17,7 @@
         "evo-neuron": "git://github.com/evo-cloud/neuron",
         "js-class": "0.0.2",
         "underscore": "1.4.4",
-        "async": "0.2.8",
-        "express": "3.2.4",
-        "websocket": "1.0.8",
-        "request": "2.21.0",
-        "msgpack": "0.1.8"
+        "async": "0.2.8"
     },
     "devDependencies": {
         "mocha": "1.10.0",
