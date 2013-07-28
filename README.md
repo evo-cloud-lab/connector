@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/evo-cloud/connector.png?branch=master)](https://travis-ci.org/evo-cloud/connector)
+
 # Evo Cloud Cluster Network Connector
 
 ## Overview
