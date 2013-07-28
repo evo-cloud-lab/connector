@@ -11,6 +11,7 @@
         "type": "git",
         "url": "https://github.com/evo-cloud/connector"
     },
+    "main": "./index.js",
     "bin": "./connector.js",
     "dependencies": {
         "evo-elements": "git://github.com/evo-cloud/elements",
