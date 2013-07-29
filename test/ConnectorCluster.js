@@ -113,8 +113,11 @@ var ConnectorCluster = Class(process.EventEmitter, {
     start: function (count, message) {
         if (process.env.LOGFILE) {
             this._logfd = fs.openSync(path.join(__dirname, '..', process.env.LOGFILE), 'a');
-            message && this.log('START CLUSTER %d nodes: %s', count, message);
-        }
+        } else if (process.env.CI) {
+            this._logfd = 1;    // on CI, dump logs to stdout
+        }            
+        message && this.log('START CLUSTER %d nodes: %s', count, message);
+
         
         this.connectors = [];
         for (var i = 0; i < count; i ++) {
@@ -136,7 +139,7 @@ var ConnectorCluster = Class(process.EventEmitter, {
         async.each(this.connectors, function (connector, next) {
             connector.stop(function () { next(); });
         }, function () {
-            if (this._logfd) {
+            if (this._logfd > 2) {
                 fs.closeSync(this._logfd);
                 delete this._logfd;
             }
