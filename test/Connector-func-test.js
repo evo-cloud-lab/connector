@@ -6,7 +6,7 @@ var assert = require('assert'),
 
 describe('Connector', function () {
     var cluster;
-    
+
     function startCluster(size, message) {
         return (cluster = new ConnectorCluster()).start(size, message);
     }
@@ -42,7 +42,7 @@ describe('Connector', function () {
                     Try.final(function () {
                         assert.equal(masterCount, 1);
                         cluster.removeAllListeners();
-                    }, callback); 
+                    }, callback);
                 }
             })
             .on('exit', function (code, signal, connector) {
@@ -53,13 +53,13 @@ describe('Connector', function () {
             });
         return cluster;
     }
-    
+
     function startClusterAndWait(count, message, callback) {
         startCluster(count, message);
         waitClusterReady(callback);
         return cluster;
     }
-    
+
     afterEach(function (done) {
         if (cluster) {
             cluster.removeAllListeners();
@@ -70,11 +70,11 @@ describe('Connector', function () {
 
     describe('Small cluster', function () {
         var NODES = 16;
-        
+
         it('connect', function (done) {
             startClusterAndWait(NODES, this.test.title, done);
         });
-        
+
         it('elect master', function (done) {
             this.timeout(3000);
             var masterId;
@@ -97,6 +97,55 @@ describe('Connector', function () {
                 },
                 function (next) {
                     waitClusterReady({ excludes: [masterId] }, next);
+                }
+            ], done);
+        });
+
+        it ('send message', function (done) {
+            async.series([
+                function (next) {
+                    startClusterAndWait(NODES, this.test.title, next);
+                }.bind(this),
+                function (next) {
+                    cluster.log('TEST SEND MESSAGE from node 0');
+                    var recvs = {};
+                    cluster.on('message', function (msg, src, connector) {
+                        if (msg.event == 'test' && connector.id != 0) {
+                            cluster.log('RECV[%s]: %j', connector.id, msg);
+                            Try.tries(function () {
+                                assert.equal(msg.data.val, 'hello');
+                                recvs[connector.id] = true;
+                            }, next);
+                            if (Object.keys(recvs).length == NODES - 1) {
+                                next();
+                            }
+                        }
+                    });
+                    cluster.connectors[0].invoke('send', { event: 'test', data: { val: 'hello' } });
+                },
+                function (next) {
+                    cluster.log('TEST SEND MESSAGE from master');
+                    var recvs = {}, masterId;
+                    cluster.connectors.some(function (connector, index) {
+                        if (connector.state == 'master') {
+                            masterId = index;
+                            return true;
+                        }
+                        return false;
+                    });
+                    cluster.on('message', function (msg, src, connector) {
+                        if (msg.event == 'test1' && connector.id != masterId) {
+                            cluster.log('RECV[%s]: %j', connector.id, msg);
+                            Try.tries(function () {
+                                assert.equal(msg.data.val, 'hello');
+                                recvs[connector.id] = true;
+                            }, next);
+                            if (Object.keys(recvs).length == NODES - 1) {
+                                next();
+                            }
+                        }
+                    });
+                    cluster.connectors[masterId].invoke('send', { event: 'test1', data: { val: 'hello' } });
                 }
             ], done);
         });

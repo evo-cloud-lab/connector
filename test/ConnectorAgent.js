@@ -12,4 +12,13 @@ connector
     .on('state', function (state) {
             process.send({ event: 'state', data: { state: state } });
         })
+    .on('message', function (msg, src) {
+            process.send({ event: 'message', data: { src: src, msg: msg } });
+        })
     .start();
+
+process.on('message', function (msg) {
+    if (msg.action == 'invoke') {
+        connector[msg.method].apply(connector, msg.args);
+    }
+});
