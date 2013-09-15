@@ -1,7 +1,7 @@
 {
     "name": "evo-connector",
     "description": "Evo Cloud Cluster Network Connector",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": "Yisui Hu <easeway@gmail.com>",
     "scripts": {
         "start": "node connector",
@@ -14,11 +14,12 @@
     "main": "./index.js",
     "bin": "./connector.js",
     "dependencies": {
-        "evo-elements": "git://github.com/evo-cloud/elements",
-        "evo-neuron": "git://github.com/evo-cloud/neuron",
+        "evo-elements": "0.0.3",
+        "evo-neuron": "0.0.3",
         "js-class": "0.0.2",
         "underscore": "1.5.1",
-        "async": "0.2.9"
+        "async": "0.2.9",
+        "uuid": "1.4.1"
     },
     "devDependencies": {
         "mocha": "1.12.0",
