@@ -1,16 +1,27 @@
-var Class = require('js-class');
+var Class  = require('js-class'),
+    path   = require('path'),
+    Config = require('evo-elements').Config;
 
 var cli;
 
-function neuronConnect(name, action) {
-    var neuron = cli.neuronConnect(name);
+function neuronOpts(opts) {
+    var options = {};
+    if (opts['sock-dir']) {
+        options.config = new Config();
+        options.config.parse(['--neuron-dendrite-sock=' + path.resolve(opts['sock-dir']) + '/neuron-${name}.sock']);
+    };
+    return options;
+}
+
+function neuronConnect(name, opts, callback) {
+    var neuron = cli.neuronConnect(name, neuronOpts(opts));
     var timer = setTimeout(function () {
         cli.fatal('Neuron connection timeout: is service running?');
     }, 3000);
     neuron.on('state', function (state) {
             if (state == 'connected') {
                 clearTimeout(timer);
-                action(neuron);
+                callback(neuron);
             }
         });
     return neuron;
@@ -72,13 +83,13 @@ function connectorSync(neuron, opts, callback) {
 }
 
 function connectorShow(opts) {
-    neuronConnect('connector', function (neuron) {
+    neuronConnect('connector', opts, function (neuron) {
         connectorSync(neuron, function () { process.exit(0); });
     });
 }
 
 function connectorMonitor(opts) {
-    neuronConnect('connector', function (neuron) {
+    neuronConnect('connector', opts, function (neuron) {
         neuron
             .subscribe('state', 'connector', function () { connectorSync(neuron, { timestamp: true }); })
             .subscribe('update', 'connector', function () { connectorSync(neuron, { timestamp: true }); })
@@ -96,10 +107,18 @@ module.exports = function (theCli) {
     cli.options
         .command('con:show')
         .help('Display connector status and nodes')
+        .option('sock-dir', {
+            type: 'string',
+            help: 'Unix socket directory of neuron'
+        })
         .callback(connectorShow);
 
     cli.options
         .command('con:monitor')
         .help('Monitor connector status')
+        .option('sock-dir', {
+            type: 'string',
+            help: 'Unix socket directory of neuron'
+        })
         .callback(connectorMonitor);
 };
