@@ -14,7 +14,7 @@ connector.announcer.send = function (msg, rinfo) {
 
 connector
     .on('nodes', function () {
-            process.send({ event: 'refresh', data: connector.nodes.toObject() });
+            process.send({ event: 'refresh', data: connector.clusterInfo() });
         })
     .on('state', function (state) {
             process.send({ event: 'state', data: { state: state } });

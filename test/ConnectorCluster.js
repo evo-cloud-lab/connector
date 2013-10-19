@@ -167,6 +167,23 @@ var ConnectorCluster = Class(process.EventEmitter, {
         }
     },
 
+    get masterIndex () {
+        var masterId;
+        this.connectors.some(function (connector, index) {
+            if (connector.state == 'master') {
+                masterId = index;
+                return true;
+            }
+            return false;
+        });
+        return masterId;
+    },
+
+    get master () {
+        var index = this.masterIndex;
+        return index >= 0 ? this.connectors[index] : null;
+    },
+
     onBroadcast: function (msg, connector) {
         this.connectors.forEach(function (c) {
             c.id != connector.id && c.send(msg);

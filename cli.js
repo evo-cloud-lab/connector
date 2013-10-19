@@ -1,20 +1,10 @@
 var Class  = require('js-class'),
-    path   = require('path'),
-    Config = require('evo-elements').Config;
+    path   = require('path');
 
 var cli;
 
-function neuronOpts(opts) {
-    var options = {};
-    if (opts['sock-dir']) {
-        options.config = new Config();
-        options.config.parse(['--neuron-dendrite-sock=' + path.resolve(opts['sock-dir']) + '/neuron-${name}.sock']);
-    };
-    return options;
-}
-
 function neuronConnect(name, opts, callback) {
-    var neuron = cli.neuronConnect(name, neuronOpts(opts));
+    var neuron = cli.neuronConnect(name, cli.neuronOpts(opts));
     var timer = setTimeout(function () {
         cli.fatal('Neuron connection timeout: is service running?');
     }, 3000);
