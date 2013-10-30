@@ -3,20 +3,6 @@ var Class  = require('js-class'),
 
 var cli;
 
-function neuronConnect(name, opts, callback) {
-    var neuron = cli.neuronConnect(name, cli.neuronOpts(opts));
-    var timer = setTimeout(function () {
-        cli.fatal('Neuron connection timeout: is service running?');
-    }, 3000);
-    neuron.on('state', function (state) {
-            if (state == 'connected') {
-                clearTimeout(timer);
-                callback(neuron);
-            }
-        });
-    return neuron;
-}
-
 function neuronRequest(neuron, name, msg, callback) {
     cli.log(cli.verb('Req') + ' ' + cli.hi(msg.event) + ' ...');
     var timer = setTimeout(function () {
@@ -73,13 +59,13 @@ function connectorSync(neuron, opts, callback) {
 }
 
 function connectorShow(opts) {
-    neuronConnect('connector', opts, function (neuron) {
+    cli.neuronConnectService('connector', opts, function (neuron) {
         connectorSync(neuron, function () { process.exit(0); });
     });
 }
 
 function connectorMonitor(opts) {
-    neuronConnect('connector', opts, function (neuron) {
+    cli.neuronConnectService('connector', opts, function (neuron) {
         neuron
             .subscribe('state', 'connector', function () { connectorSync(neuron, { timestamp: true }); })
             .subscribe('update', 'connector', function () { connectorSync(neuron, { timestamp: true }); })
@@ -94,21 +80,11 @@ function connectorMonitor(opts) {
 module.exports = function (theCli) {
     cli = theCli;
 
-    cli.options
-        .command('con:show')
-        .help('Display connector status and nodes')
-        .option('sock-dir', {
-            type: 'string',
-            help: 'Unix socket directory of neuron'
-        })
-        .callback(connectorShow);
+    cli.neuronCmd('con:show', function (cmd) {
+        cmd.help('Display connector status and nodes');
+    }, connectorShow);
 
-    cli.options
-        .command('con:monitor')
-        .help('Monitor connector status')
-        .option('sock-dir', {
-            type: 'string',
-            help: 'Unix socket directory of neuron'
-        })
-        .callback(connectorMonitor);
+    cli.neuronCmd('con:monitor', function (cmd) {
+        cmd.help('Monitor connector status');
+    }, connectorMonitor);
 };
