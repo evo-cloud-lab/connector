@@ -7,9 +7,9 @@ var Class = require('js-class'),
     async = require('async');
 
 var ConnectorStub = Class(process.EventEmitter, {
-    constructor: function (id, port, cluster) {
+    constructor: function (id, addrIndex, cluster) {
         this.id = id;
-        this._port = port;
+        this._addrIndex = addrIndex + 1;
         this._cluster = cluster;
     },
 
@@ -18,18 +18,13 @@ var ConnectorStub = Class(process.EventEmitter, {
     },
 
     start: function () {
-        this._socket = dgram.createSocket('udp4');
-        this._socket.bind(this._port, '127.0.0.2');
-        this._socket.on('message', this.onBroadcast.bind(this));
-
         var args = [
             path.join(__dirname, 'ConnectorAgent.js'),
             '--id=' + this.id,
             '--cluster=' + this._cluster,
-            '--port=' + this._port,
-            '--address=127.0.0.1',
-            '--broadcast=127.0.0.255',
-            '--test-broadcast=127.0.0.2',
+            '--port=' + (12710 + this._addrIndex),
+            '--address=0.0.0.0',
+            '--broadcast=224.1.0.0:22410',
             '--announceIntervals=[100,100,100,100,200,200,200]',
             '--identityTimeout=100',
             '--communicateTimeout=600',
@@ -58,21 +53,10 @@ var ConnectorStub = Class(process.EventEmitter, {
         return this;
     },
 
-    send: function (msg) {
-        if (this._socket) {
-            this._socket.send(msg, 0, msg.length, this._port, '127.0.0.1');
-        }
-        return this;
-    },
-
     invoke: function (method) {
         if (this.agent) {
             this.agent.send({ action: 'invoke', method: method, args: [].slice.call(arguments, 1) });
         }
-    },
-
-    onBroadcast: function (msg) {
-        this.emit('broadcast', msg, this);
     },
 
     onMessage: function (msg) {
@@ -115,8 +99,7 @@ var ConnectorStub = Class(process.EventEmitter, {
 });
 
 var ConnectorCluster = Class(process.EventEmitter, {
-    constructor: function (basePort, cluster) {
-        this.basePort = basePort || 11100;
+    constructor: function (cluster) {
         this.cluster = cluster || 'test';
         this.connectors = [];
     },
@@ -132,9 +115,8 @@ var ConnectorCluster = Class(process.EventEmitter, {
 
         this.connectors = [];
         for (var i = 0; i < count; i ++) {
-            var connector = new ConnectorStub(i, this.basePort + i, this.cluster);
+            var connector = new ConnectorStub(i, i, this.cluster);
             connector
-                .on('broadcast', this.onBroadcast.bind(this))
                 .on('update', this.onUpdate.bind(this))
                 .on('message', this.onMessage.bind(this))
                 .on('exit', this.onExit.bind(this))
@@ -182,12 +164,6 @@ var ConnectorCluster = Class(process.EventEmitter, {
     get master () {
         var index = this.masterIndex;
         return index >= 0 ? this.connectors[index] : null;
-    },
-
-    onBroadcast: function (msg, connector) {
-        this.connectors.forEach(function (c) {
-            c.id != connector.id && c.send(msg);
-        });
     },
 
     onUpdate: function (msg, connector) {

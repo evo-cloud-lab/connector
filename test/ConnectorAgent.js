@@ -5,12 +5,6 @@ var elements = require('evo-elements'),
     Connector = require('../lib/Connector');
 
 var connector = new Connector(conf.opts, new Logger('connector:' + conf.opts.cluster, '<' + conf.opts.id + '> '));
-// Hack: stub 'send' method of announcer to simulate broadcast on local machine
-var oldSend = connector.announcer.send;
-connector.announcer.send = function (msg, rinfo) {
-    rinfo || (rinfo = { address: conf.query('test.broadcast') });
-    return oldSend.call(this, msg, rinfo);
-};
 
 connector
     .on('nodes', function () {
