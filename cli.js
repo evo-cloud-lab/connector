@@ -3,19 +3,25 @@ var Class  = require('js-class'),
 
 var cli;
 
+var REQSTATE_STYLUS = {
+    state: function (state) {
+        return { FAILED: cli.err, COMPLETED: cli.ok }[state].call(cli, state);
+    }
+};
+
 function neuronRequest(neuron, name, msg, callback) {
-    cli.log(cli.verb('Req') + ' ' + cli.hi(msg.event) + ' ...');
+    cli.logAction('Request', msg.event);
     var timer = setTimeout(function () {
         cli.fatal('Neuron request timeout');
     }, 3000);
     neuron.request(name, msg, function (err, resp) {
         clearTimeout(timer);
         if (err) {
-            cli.log(cli.verb('Req') + ' ' + cli.hi(msg.event) + ' ' + cli.err('FAILED'));
+            cli.logAction('Response', msg.event, 'FAILED', REQSTATE_STYLUS);
             cli.fatal(err);
         } else {
-            cli.log(cli.verb('Req') + ' ' + cli.hi(msg.event) + ' ' + cli.ok('COMPLETED'));
-            cli.debugging && cli.log(cli.lo('Response: %j'), resp);
+            cli.logAction('Response', msg.event, 'COMPLETED', REQSTATE_STYLUS);
+            cli.debugging && cli.logOut(cli.lo('Response: %j'), resp);
             callback(resp);
         }
     });
@@ -29,13 +35,17 @@ var STATE_COLORS = {
     member: 'ok'
 };
 
+var TIME_STYLUS = {
+    state: function (state) { return cli.cold(state); }
+};
+
 function connectorSync(neuron, opts, callback) {
     if (typeof(opts) == 'function') {
         callback = opts;
         opts = {};
     }
     neuronRequest(neuron, 'connector', { event: 'sync', data: {} }, function (msg) {
-        cli.log((opts && opts.timestamp ? cli.cold(new Date().toLocaleTimeString()) + ' ' : '') + cli.verb('Status'))
+        cli.logAction('Status', null, opts && opts.timestamp ? new Date().toLocaleTimeString() : null, TIME_STYLUS);
         cli.logObject(msg.data, {
             keyWidth: 10,
             renders: {
@@ -70,7 +80,7 @@ function connectorMonitor(opts) {
             .subscribe('state', 'connector', function () { connectorSync(neuron, { timestamp: true }); })
             .subscribe('update', 'connector', function () { connectorSync(neuron, { timestamp: true }); })
             .subscribe('message', 'connector', function (msg) {
-                cli.log(cli.cold(new Date().toLocaleTimeString()) + ' ' + cli.verb('Message'));
+                cli.logAction('Message', null, new Date().toLocaleTimeString(), TIME_STYLUS);
                 cli.logObject(msg, { keyWidth: 10 }, 1);
             });
         connectorSync(neuron, { timestamp: true });
