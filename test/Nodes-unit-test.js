@@ -25,7 +25,7 @@ describe('Nodes', function () {
     it('#expectations', function () {
         var nodes = new Nodes(100);
         assert.equal(nodes.revision, 0);
-        nodes.expectations = { 1: { key: 'val' } };
+        nodes.expectations = { key: { revision: 1, nodes: { 1: 'val' } } };
         assert.equal(nodes.revision, 1);
     });
 
@@ -44,8 +44,11 @@ describe('Nodes', function () {
                 }
             });
             nodes.expectations = {
-                1: {
-                    key: 'val0'
+                key: {
+                    revision: 2,
+                    nodes: {
+                        1: 'val0'
+                    }
                 }
             };
 

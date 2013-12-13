@@ -43,6 +43,14 @@ describe('Connector', function () {
                     Try.final(function () {
                         assert.equal(masterCount, 1);
                         cluster.removeAllListeners();
+                        var master = cluster.master;
+                        assert.ok(master);
+                        cluster.log('TEST MASTER NODES %j', master.nodes);
+                        for (var i = 0; i < count; i ++) {
+                            if (i != master.id) {
+                                assert.ok(master.nodes[i]);
+                            }
+                        }
                     }, callback);
                 }
             })
@@ -69,7 +77,7 @@ describe('Connector', function () {
         }
     });
 
-    var TIMEOUT = 30000;
+    var TIMEOUT = 5000;
 
     describe('Small cluster', function () {
         var NODES = 16;
@@ -195,6 +203,7 @@ describe('Connector', function () {
                         cluster.log('TEST UPDATE [%d]: %j', connector.id, msg);
                         msg.event == 'refresh' && validator.validate();
                     });
+                    cluster.log('TEST VALIDATION START');
                     master.invoke('updateLocalStates', { key: 'val' });
                     validator.start();
                 }
@@ -223,8 +232,13 @@ describe('Connector', function () {
         it('set expectations', function (done) {
             this.timeout(TIMEOUT);
             var expectations = {
-                1: { key: 'val' },
-                4: { key: 'val' }
+                key: {
+                    revision: 2,
+                    nodes: {
+                        1: 'val',
+                        4: 'val'
+                    }
+                }
             };
             var master;
             async.series([
@@ -243,11 +257,11 @@ describe('Connector', function () {
                         var updated = true;
                         for (var n = 0; n < NODES; n ++) {
                             var connector = cluster.connectors[n];
-                            for (var id in expectations) {
+                            for (var id in expectations.key.nodes) {
                                 var node = connector.nodes[id];
                                 if (!node || !node.states ||
                                     !node.states.expect ||
-                                    node.states.expect.key != expectations[id].key) {
+                                    node.states.expect.key != expectations.key.nodes[id]) {
                                     updated = false;
                                     break;
                                 }
@@ -267,6 +281,7 @@ describe('Connector', function () {
                             validator.validate();
                         }
                     });
+                    cluster.log('TEST VALIDATION START');
                     master.invoke('setExpectations', expectations);
                     validator.start();
                 }
