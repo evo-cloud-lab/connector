@@ -107,9 +107,9 @@ var ConnectorCluster = Class(process.EventEmitter, {
     start: function (count, message) {
         if (process.env.LOGFILE) {
             this._logfd = fs.openSync(process.env.LOGFILE, 'a');
-        } else if (process.env.CI) {
+        } /*else if (process.env.CI) {
             this._logfd = 1;    // on CI, dump logs to stdout
-        }
+        }*/
         message && this.log('START CLUSTER %d nodes: %s', count, message);
 
 
