@@ -5,7 +5,8 @@
     "author": "Yisui Hu <easeway@gmail.com>",
     "scripts": {
         "start": "node connector",
-        "test": "mocha --reporter spec test/*-test.js"
+        "test": "mocha -R spec test/*-test.js",
+        "cov": "mocha -r blanket -R html-cov test/*-unit-test.js >_coverage.html"
     },
     "repository": {
         "type": "git",
@@ -24,6 +25,7 @@
     "devDependencies": {
         "mocha": "1.12.0",
         "sandboxed-module": "0.2.1",
+        "blanket": "1.1.6",
         "grunt": "0.4.2",
         "grunt-mocha-test": "0.8.1"
     },
@@ -36,5 +38,11 @@
             "type": "MIT",
             "url": "https://github.com/evo-cloud/connector/raw/master/LICENSE"
         }
-    ]
+    ],
+    "config": {
+        "blanket": {
+            "onlyCwd": true,
+            "pattern": "//^((?!node_modules).)*/lib/.+$/"
+        }
+    }
 }
