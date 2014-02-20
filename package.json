@@ -18,8 +18,8 @@
         "evo-elements": "git://github.com/evo-cloud/elements",
         "evo-neuron": "git://github.com/evo-cloud/neuron",
         "js-class": "0.0.2",
+        "js-flow": "0.0.1",
         "underscore": "1.5.1",
-        "async": "0.2.9",
         "uuid": "1.4.1"
     },
     "devDependencies": {

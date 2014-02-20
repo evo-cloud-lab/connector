@@ -1,10 +1,10 @@
 var Class = require('js-class'),
+    flow  = require('js-flow'),
     path  = require('path'),
     fs    = require('fs'),
     spawn = require('child_process').spawn,
     util  = require('util'),
-    dgram = require('dgram'),
-    async = require('async');
+    dgram = require('dgram');
 
 var ConnectorStub = Class(process.EventEmitter, {
     constructor: function (id, addrIndex, cluster) {
@@ -130,15 +130,15 @@ var ConnectorCluster = Class(process.EventEmitter, {
     },
 
     stop: function (callback) {
-        async.each(this.connectors, function (connector, next) {
+        flow.each(this.connectors).do(function (connector, next) {
             connector.stop(function () { next(); });
-        }, function () {
+        }).with(this).run(function () {
             if (this._logfd > 2) {
                 fs.closeSync(this._logfd);
                 delete this._logfd;
             }
             callback && callback();
-        }.bind(this));
+        });
         return this;
     },
 

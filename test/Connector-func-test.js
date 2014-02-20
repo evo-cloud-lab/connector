@@ -1,7 +1,6 @@
 var assert = require('assert'),
-    async  = require('async'),
     Class  = require('js-class'),
-    Try    = require('evo-elements').Try,
+    flow   = require('js-flow'),
 
     ConnectorCluster = require('./ConnectorCluster');
 
@@ -40,7 +39,7 @@ describe('Connector', function () {
                 }
                 cluster.log('TEST CLUSTER %d/%d %j %j', masterCount, i, excludes, states);
                 if (i >= count) {
-                    Try.final(function () {
+                    flow.Try.final(function () {
                         assert.equal(masterCount, 1);
                         cluster.removeAllListeners();
                         var master = cluster.master;
@@ -90,37 +89,38 @@ describe('Connector', function () {
         it('elect master', function (done) {
             this.timeout(TIMEOUT);
             var masterId;
-            async.series([
-                function (next) {
+            flow.steps()
+                .next(function (next) {
                     startClusterAndWait(NODES, this.test.title, next);
-                }.bind(this),
-                function (next) {
+                })
+                .next(function (next) {
                     masterId = cluster.masterIndex;
                     cluster.log('TEST STOP %s', masterId);
-                    Try.tries(function () {
+                    flow.Try.tries(function () {
                         assert.ok(masterId >= 0);
                     }, next);
                     cluster.master.stop(function () { setTimeout(next, 500); });
-                },
-                function (next) {
+                })
+                .next(function (next) {
                     waitClusterReady({ excludes: [masterId] }, next);
-                }
-            ], done);
+                })
+                .with(this)
+                .run(done);
         });
 
         it('send message', function (done) {
             this.timeout(TIMEOUT);
-            async.series([
-                function (next) {
+            flow.steps()
+                .next(function (next) {
                     startClusterAndWait(NODES, this.test.title, next);
-                }.bind(this),
-                function (next) {
+                })
+                .next(function (next) {
                     cluster.log('TEST SEND MESSAGE from node 0');
                     var recvs = {};
                     cluster.on('message', function (msg, src, connector) {
                         if (msg.event == 'test' && connector.id != 0) {
                             cluster.log('RECV[%s]: %j', connector.id, msg);
-                            Try.tries(function () {
+                            flow.Try.tries(function () {
                                 assert.equal(msg.data.val, 'hello');
                                 recvs[connector.id] = true;
                             }, next);
@@ -131,14 +131,14 @@ describe('Connector', function () {
                         }
                     });
                     cluster.connectors[0].invoke('send', { event: 'test', data: { val: 'hello' } });
-                },
-                function (next) {
+                })
+                .next(function (next) {
                     cluster.log('TEST SEND MESSAGE from master');
                     var recvs = {}, masterId = cluster.masterIndex;
                     cluster.on('message', function (msg, src, connector) {
                         if (msg.event == 'test1' && connector.id != masterId) {
                             cluster.log('RECV[%s]: %j', connector.id, msg);
-                            Try.tries(function () {
+                            flow.Try.tries(function () {
                                 assert.equal(msg.data.val, 'hello');
                                 recvs[connector.id] = true;
                             }, next);
@@ -148,8 +148,9 @@ describe('Connector', function () {
                         }
                     });
                     cluster.connectors[masterId].invoke('send', { event: 'test1', data: { val: 'hello' } });
-                }
-            ], done);
+                })
+                .with(this)
+                .run(done);
         });
 
         var StatesValidator = Class({
@@ -186,18 +187,18 @@ describe('Connector', function () {
         it('local states on master', function (done) {
             this.timeout(TIMEOUT);
             var masterId, master;
-            async.series([
-                function (next) {
+            flow.steps()
+                .next(function (next) {
                     startClusterAndWait(NODES, this.test.title, next);
-                }.bind(this),
-                function (next) {
+                })
+                .next(function (next) {
                     master = cluster.master;
-                    Try.final(function () {
+                    flow.Try.final(function () {
                         assert.ok(master);
                         masterId = master.id;
                     }, next);
-                },
-                function (next) {
+                })
+                .next(function (next) {
                     var validator = new StatesValidator(masterId, next);
                     cluster.on('update', function (msg, connector) {
                         cluster.log('TEST UPDATE [%d]: %j', connector.id, msg);
@@ -206,17 +207,18 @@ describe('Connector', function () {
                     cluster.log('TEST VALIDATION START');
                     master.invoke('updateLocalStates', { key: 'val' });
                     validator.start();
-                }
-            ], done);
+                })
+                .with(this)
+                .run(done);
         });
 
         it('local states on member', function (done) {
             this.timeout(TIMEOUT);
-            async.series([
-                function (next) {
+            flow.steps()
+                .next(function (next) {
                     startClusterAndWait(NODES, this.test.title, next);
-                }.bind(this),
-                function (next) {
+                })
+                .next(function (next) {
                     var memberId = cluster.masterIndex == 0 ? 1 : 0;
                     var validator = new StatesValidator(memberId, next);
                     cluster.on('update', function (msg, connector) {
@@ -225,8 +227,9 @@ describe('Connector', function () {
                     });
                     cluster.connectors[memberId].invoke('updateLocalStates', { key: 'val' });
                     validator.start();
-                }
-            ], done);
+                })
+                .with(this)
+                .run(done);
         });
 
         it('set expectations', function (done) {
@@ -241,17 +244,17 @@ describe('Connector', function () {
                 }
             };
             var master;
-            async.series([
-                function (next) {
+            flow.steps()
+                .next(function (next) {
                     startClusterAndWait(NODES, this.test.title, next);
-                }.bind(this),
-                function (next) {
+                })
+                .next(function (next) {
                     master = cluster.master;
-                    Try.final(function () {
+                    flow.Try.final(function () {
                         assert.ok(master);
                     }, next);
-                },
-                function (next) {
+                })
+                .next(function (next) {
                     var validator = new StatesValidator(0, next);
                     validator.validate = function () {
                         var updated = true;
@@ -284,8 +287,9 @@ describe('Connector', function () {
                     cluster.log('TEST VALIDATION START');
                     master.invoke('setExpectations', expectations);
                     validator.start();
-                }
-            ], done);
+                })
+                .with(this)
+                .run(done);
         });
     });
 });
