@@ -7,9 +7,9 @@ describe('evo-connector', function () {
 
     beforeEach(function (done) {
         (sandbox = new tubes.Sandbox())
-            .add(new tubes.Environment())
+            .add(new tubes.Environment({ nodes: 16 }))
             .add(new tubes.NeuronFactory())
-            .add(new tubes.Connector({ instances: 16 }))
+            .add(new tubes.Connector())
             .start(done);
     });
 
@@ -23,7 +23,7 @@ describe('evo-connector', function () {
         this.timeout(TIMEOUT);
         flow.steps()
             .next('ensureReady')
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -45,7 +45,7 @@ describe('evo-connector', function () {
                     }
                 }, next);
             })
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -56,7 +56,7 @@ describe('evo-connector', function () {
             .next('shutdownMaster')
             .next('untilUnstable')
             .next('ensureReady')
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -83,7 +83,7 @@ describe('evo-connector', function () {
                     assert.equal(masterIndex, newMaster);
                 }, next);
             })
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -120,7 +120,7 @@ describe('evo-connector', function () {
                     }
                 }, next);
             })
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -146,7 +146,7 @@ describe('evo-connector', function () {
                     });
                 }, next);
             })
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -197,7 +197,7 @@ describe('evo-connector', function () {
                     ]);
                 }, next);
             })
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 
@@ -228,7 +228,7 @@ describe('evo-connector', function () {
                     assert.deepEqual(recv, { key: 1234 });
                 }, next);
             })
-            .with(sandbox.res('connector'))
+            .with(sandbox.res('evo-connector'))
             .run(done);
     });
 });
